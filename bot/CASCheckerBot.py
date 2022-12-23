@@ -8,28 +8,31 @@ import asyncio
 
 
 async def check_user(user_id: int, update: Update, context: ContextTypes.DEFAULT_TYPE):
-    result: bool = await json.loads(requests.request("GET", f"https://api.cas.chat/check?user_id={user_id}").text)["ok"]
+    url = "https://api.cas.chat/check?user_id=" + str(user_id)
+    chat_id = update.effective_chat.id
+    result: bool = await json.loads(requests.request("GET", url).text)["ok"]
     if result:
         # check if bot has ban rights
         if not update.effective_chat.get_member(context.bot.id).can_restrict_members:
             message = f"User {user_id} is banned from CAS, but I don't have ban rights. Please give me ban rights."
-            await context.bot.send_message(chat_id=update.effective_chat.id, text=message)
+            await context.bot.send_message(chat_id=chat_id, text=message)
             return
 
         message = f"User {user_id} has been banned for CAS Violation."
-        await context.bot.ban_chat_member(chat_id=update.effective_chat.id, user_id=user_id)
-        await context.bot.send_message(chat_id=update.effective_chat.id, text=message)
+        await context.bot.ban_chat_member(chat_id=chat_id, user_id=user_id)
+        await context.bot.send_message(chat_id=chat_id, text=message)
 
 
 async def on_join(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if update.message.new_chat_members[0].is_bot:
+    chat_member = update.message.new_chat_members[0]
+    if chat_member.is_bot:
         return
-    if update.message.new_chat_members[0].id == context.bot.id:
+    if chat_member.id == context.bot.id:
         message = "Hello, I am CAS Bot. I will ban users who are banned from CAS. Please give me admin and ban rights."
         await context.bot.send_message(chat_id=update.effective_chat.id, text=message)
         return
 
-    user_id = update.message.new_chat_members[0].id
+    user_id = chat_member.id
     await check_user(user_id, update, context)
 
 
