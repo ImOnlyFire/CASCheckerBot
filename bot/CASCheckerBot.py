@@ -41,7 +41,7 @@ async def on_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
 def main():
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-    token = open("token.txt", "r+").readline().strip()
+    token = open("../token.txt", "r+").readline().strip()
     app = ApplicationBuilder().token(token).build()
     app.add_error_handler(ErrorHandler.error_handler)
     app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, on_join))
